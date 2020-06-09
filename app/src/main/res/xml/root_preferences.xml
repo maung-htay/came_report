@@ -1,0 +1,9 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="@string/setting">
+        <EditTextPreference
+            app:key="server"
+            app:title="@string/server"
+            app:defaultValue="http://167.172.70.248:8000"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+</PreferenceScreen>
