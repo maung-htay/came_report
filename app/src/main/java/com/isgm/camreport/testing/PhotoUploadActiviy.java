@@ -1,38 +1,38 @@
-package com.isgm.camreport.activity;
+package com.isgm.camreport.testing;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.isgm.camreport.BuildConfig;
 import com.isgm.camreport.R;
-import com.isgm.camreport.model.MultiPhoto;
+import com.isgm.camreport.activity.BaseActivity;
+import com.isgm.camreport.activity.MultiPhotoActivity;
+import com.isgm.camreport.activity.RecentHistoryActivity;
 import com.isgm.camreport.recyclerview.MultiPhotoAdapter;
+import com.isgm.camreport.recyclerview.RecyclerAdapter;
 import com.isgm.camreport.roomdb.DatabaseClient;
 import com.isgm.camreport.roomdb.History;
-import com.isgm.camreport.testing.ItemTouchHelperAdapter;
-import com.isgm.camreport.testing.MyCustomItemTouchHelper;
 import com.isgm.camreport.utility.APIService;
 import com.isgm.camreport.utility.RetrofitAgent;
-
 
 import org.jetbrains.annotations.NotNull;
 
@@ -49,69 +49,99 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
-public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapter.OnPhotoListener {
-
-    private static final String TAG = MultiPhotoActivity.class.getName();
+public class PhotoUploadActiviy extends BaseActivity {
     RecyclerView recyclerView;
     Button button;
     ProgressBar progressBar;
-    MultiPhotoAdapter multiPhotoAdapter;
-    List<History> multiPhotoUtilList = new ArrayList<>();
+    MyRecyclerViewAdapter adapter;
+    private List<History> multiPhotoUtilList = new ArrayList<>();
     public static ItemTouchHelper itemTouchHelper;
+
+
+
     int upload_sum_count;
     int uploaded_sum_count;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setContentView(R.layout.activity_multi_photo);
+        setContentView(R.layout.activity_photo_upload_activiy);
         init();
-        gettingAllPhoto();
+        recyclerView = (RecyclerView) findViewById(R.id.card_view_recycler_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+        GetHistory getHistory = new GetHistory(this);
+        getHistory.execute();
 
 
 
     }
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem menuItem) {
-        if (menuItem.getItemId() == android.R.id.home) {
-            onBackPressed();
-            finish();
+
+    public class GetHistory extends AsyncTask<Void, Void, List<History>> {
+        final WeakReference<PhotoUploadActiviy> context;
+
+
+        GetHistory(PhotoUploadActiviy context) {
+            this.context = new WeakReference<>(context);
         }
-        return super.onOptionsItemSelected(menuItem);
+
+        @Override
+        protected List<History> doInBackground(Void... voids) {
+            return DatabaseClient.getInstance(this.context.get().getApplicationContext())
+                    .getAppDatabase().historyDao().getNotSendData(false);
+        }
+        @Override
+        protected void onPostExecute(List<History> histories) {
+            super.onPostExecute(histories);
+
+            if (histories.isEmpty()) {
+
+                    button.setEnabled(false);
+
+
+            } else {
+                recyclerView.setLayoutManager(new LinearLayoutManager(this.context.get().getApplicationContext()));
+                adapter = new MyRecyclerViewAdapter(this.context.get().getApplicationContext(), histories);
+                ItemTouchHelper.Callback callback =
+                        new MyCustomItemTouchHelper(adapter);
+                itemTouchHelper = new ItemTouchHelper(callback);
+                itemTouchHelper.attachToRecyclerView(null);
+                itemTouchHelper.attachToRecyclerView(this.context.get().recyclerView);
+                this.context.get().recyclerView.setAdapter(adapter);
+                multiPhotoUtilList = histories;
+                button.setEnabled(true);
+            }
+        }
+
+
     }
+
+
 
     private void init() {
         progressBar = (ProgressBar) findViewById(R.id.progressBar_cyclic);
         button = (Button) findViewById(R.id.button);
-        button.setEnabled(false);
+
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Do file uploading to server
-
-                photoUploadingToServer();
+                 photoUploadingToServer();
+                 onBackPressed();
             }
         });
 
-        recyclerView = (RecyclerView) findViewById(R.id.card_view_recycler_list);
-        recyclerView.setLayoutManager(
-                new GridLayoutManager(this, getResources().getInteger(R.integer.shr_column_count)));
     }
 
     private void photoUploadingToServer() {
-        progressBar.setVisibility(View.VISIBLE);
-        for(History history: multiPhotoUtilList){
-           // Log.i(TAG, "doInBackground: => " + history.isSelected());
-            if(history.isSelected() == true) {
+        if(multiPhotoUtilList.size() <= 0 ){
+            Toast.makeText(this,"You can not upload any photo", Toast.LENGTH_LONG).show();
+        }else {
+            for (History history : multiPhotoUtilList) {
+                // Log.i(TAG, "doInBackground: => " + history.isSelected());
                 sendDataToServer(history);
             }
         }
-        progressBar.setVisibility(View.GONE);
-        Log.i(TAG, "doInBackground: => upload_sum count => " + upload_sum_count);
-       onBackPressed();
-
     }
 
     private void sendDataToServer(History history) {
@@ -163,15 +193,15 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
                                     String error = responseJsonObject.get("error").getAsString();
 
                                     if (status.equals("success")) {
-                                       // update progress bar and db
+                                        // update progress bar and db
                                         uploaded_sum_count += 1;
-                                        Log.i(TAG, "onResponse: => Succeessfule" + uploaded_sum_count);
+                                        Log.i("TAG", "onResponse: => Succeessfule" + uploaded_sum_count);
                                         updateDbIsSentStatus(true,history.getId());
 
 
                                     } else {
-                                        Log.i(TAG, "onResponse: => Failure " );
-                                       // show toast for failure and update db
+                                        Log.i("TAG", "onResponse: => Failure " );
+                                        // show toast for failure and update db
                                         updateDbIsSentStatus(false, history.getId());
 
                                     }
@@ -185,7 +215,7 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
                     @Override
                     public void onFailure(@NotNull Call<ResponseBody> call, @NonNull Throwable throwable) {
                         // show toast for failure and update db
-                        Log.i(TAG, "onFailure: Failure");
+                        Log.i("TAG", "onFailure: Failure");
                         updateDbIsSentStatus(false, history.getId());
 
                     }
@@ -194,23 +224,17 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
                 e.printStackTrace();
             }
         } else {
-            Toast.makeText(MultiPhotoActivity.this,
+            Toast.makeText(PhotoUploadActiviy.this,
                     "Something went wrong! Please take the photo again!", Toast.LENGTH_SHORT).show();
         }
 
     }
-
     private void updateDbIsSentStatus(boolean b, int id) {
-
-
-
         class updateIsSentStatus extends AsyncTask<Void,Void,Void>{
-
-
             @Override
             protected Void doInBackground(Void... voids) {
-                Log.i(TAG, "doInBackground: => " + b);
-                DatabaseClient.getInstance(MultiPhotoActivity.this.getApplicationContext())
+                Log.i("TAG", "doInBackground: => " + b);
+                DatabaseClient.getInstance(PhotoUploadActiviy.this.getApplicationContext())
                         .getAppDatabase().historyDao().updateById(b,id);
                 return null;
             }
@@ -218,7 +242,6 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
         new updateIsSentStatus().execute();
 
     }
-
     // convert image input to byte[]
     private byte[] toByteArray(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -230,58 +253,6 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
             byteArrayOutputStream.write(byteArray, 0, length);
         }
         return byteArrayOutputStream.toByteArray();
-    }
-
-
-    private void gettingAllPhoto() {
-
-
-
-
-        Log.i(TAG, "gettingAllPhoto: Reach Here");
-
-        // Gettign all photo from local db
-          class getAllDataFromDB extends AsyncTask<Void,Void,Void>{
-
-              @Override
-              protected Void doInBackground(Void... voids) {
-                  multiPhotoUtilList =  DatabaseClient.getInstance(MultiPhotoActivity.this.getApplicationContext())
-                          .getAppDatabase().historyDao().getNotSendData(false);;
-                  //Please Change Here, take data from DB
-                    multiPhotoAdapter = new MultiPhotoAdapter(getBaseContext(), multiPhotoUtilList,MultiPhotoActivity.this::onPhotoClick);
-                 /* ItemTouchHelper.Callback callback =
-                          new MyCustomItemTouchHelper((ItemTouchHelperAdapter) multiPhotoAdapter);
-                  itemTouchHelper = new ItemTouchHelper(callback);
-                  itemTouchHelper.attachToRecyclerView(null);
-                  itemTouchHelper.attachToRecyclerView(recyclerView);*/
-                  recyclerView.setAdapter(multiPhotoAdapter);
-
-                  return null;
-              }
-
-          }
-          new getAllDataFromDB().execute();
-    }
-
-
-    @Override
-    public void onPhotoClick(int position, List<History> multiPhotoUtilsList) {
-        boolean check = false;
-        upload_sum_count = 0;
-
-        for(History multiPhoto: multiPhotoUtilsList){
-
-            if(multiPhoto.isSelected() == true){
-                upload_sum_count += 1;
-                 check = true;
-
-            }
-
-        }
-        if (check)
-            button.setEnabled(true);
-        else
-            button.setEnabled(false);
     }
 
 }

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.isgm.camreport"
@@ -28,6 +29,8 @@
         android:supportsRtl="true"
         tools:ignore="BaseActivity"
         tools:targetApi="q">
+        <activity android:name=".testing.PhotoUploadActiviy"></activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -41,44 +44,37 @@
         <activity
             android:name=".activity.RecentHistoryActivity"
             android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar" />
-
         <activity
             android:name=".activity.SettingsActivity"
             android:label="@string/setting"
             android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
-
         <activity
             android:name=".activity.ChooseSurveyPacActivity"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".activity.CameraActivity"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".activity.MultiPhotoActivity"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustPan" />
-
         <activity
             android:name=".activity.CircuitAreaAndRouteActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize" />
-
-        <activity android:name="com.isgm.camreport.activity.BaseActivity" />
-
+        <activity android:name=".activity.BaseActivity" />
         <activity
-            android:name="com.isgm.camreport.activity.LoginActivity"
+            android:name=".activity.LoginActivity"
             android:theme="@style/AppThemeWithNoActionBar"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="com.isgm.camreport.activity.FiberOperationTypeActivity"
+            android:name=".activity.FiberOperationTypeActivity"
             android:screenOrientation="portrait" />
 
         <provider
@@ -90,8 +86,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <service
             android:name=".utility.GetCurrentLocation"
             tools:ignore="Instantiatable" />
     </application>
+
 </manifest>

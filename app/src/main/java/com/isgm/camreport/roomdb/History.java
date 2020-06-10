@@ -39,6 +39,8 @@ public class History {
     //By Maung Htay for select photo or not
     @ColumnInfo(name = "isSelected")
     private boolean isSelected = false;
+    @ColumnInfo(name = "isSelected_flag")
+    private String isSelected_flag;
 
     public int getId() {
         return id;
@@ -166,5 +168,13 @@ public class History {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
+    }
+
+    public String getIsSelected_flag() {
+        return isSelected_flag;
+    }
+
+    public void setIsSelected_flag(String isSelected_flag) {
+        this.isSelected_flag = isSelected_flag;
     }
 }

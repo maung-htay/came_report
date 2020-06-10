@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.isgm.camreport.R;
+import com.isgm.camreport.testing.PhotoUploadActiviy;
 import com.isgm.camreport.utility.Utilities;
 
 import butterknife.ButterKnife;
@@ -48,7 +49,7 @@ public class FiberOperationTypeActivity extends BaseActivity {
 
     @OnClick(R.id.btnGallery)
     void galleryBtnClick() {
-        Intent intent = new Intent(this, MultiPhotoActivity.class);
+        Intent intent = new Intent(this, PhotoUploadActiviy.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }

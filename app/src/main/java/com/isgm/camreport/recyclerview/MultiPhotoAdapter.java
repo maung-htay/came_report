@@ -4,10 +4,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.ThumbnailUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.isgm.camreport.R;
 import com.isgm.camreport.activity.MultiPhotoActivity;
+import com.isgm.camreport.model.MultiPhoto;
 import com.isgm.camreport.roomdb.History;
 
 import java.io.File;
@@ -58,7 +62,8 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
         if(multiPhotoUtilsList != null){
 
 
-          //  MultiPhoto multiPhoto = multiPhotoUtilsList.get(position);
+            History multiPhoto = multiPhotoUtilsList.get(position);
+            final int THUMBSIZE = 228;
 
 
             File imgFile = new  File(multiPhotoUtilsList.get(position).getImagePath());
@@ -66,6 +71,10 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
             if(imgFile.exists()){
 
                 Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                Bitmap thumbImage = ThumbnailUtils.extractThumbnail(
+                        BitmapFactory.decodeFile(imgFile.getAbsolutePath()),
+                        THUMBSIZE,
+                        THUMBSIZE);
                 holder.photoImageView.setImageBitmap(myBitmap);
 
             }
@@ -89,6 +98,12 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
 //
 //                }
 //            });
+
+
+
+
+
+
         }
 
     }
@@ -99,31 +114,49 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
     }
 
     public class MultiPhotoAdapterViewHolder extends RecyclerView.ViewHolder{
-        TextView photoTitleText,photoDate , photoType, photoRoute = null;
-        ImageView photoImageView = null;
+        TextView photoTitleText,photoDate , photoType, photoRoute ;
+        ImageView photoImageView ;
+        CheckBox checkBox ;
         OnPhotoListener onPhotoListener;
         public MultiPhotoAdapterViewHolder(@NonNull View itemView, OnPhotoListener onPhotoListener) {
             super(itemView);
-            if(itemView != null)
-            {
+
+            Log.i("TAG", "Item View: ");
+
+
                 photoTitleText = (TextView)itemView.findViewById(R.id.card_view_image_title);
                 photoDate = (TextView) itemView.findViewById(R.id.card_view_image_date);
                 photoType = (TextView)itemView.findViewById(R.id.card_view_image_type);
                 photoRoute = (TextView) itemView.findViewById(R.id.card_view_image_route);
                 photoImageView = (ImageView)itemView.findViewById(R.id.card_view_image);
 
+
                 this.onPhotoListener = onPhotoListener;
+
+
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        multiPhotoUtilsList.get(getAdapterPosition()).setSelected(!multiPhotoUtilsList.get(getAdapterPosition()).isSelected());
-                        Log.i(MultiPhotoActivity.class.getName(), "onClick: +> " + getAdapterPosition());
-                        itemView.setBackgroundColor(multiPhotoUtilsList.get(getAdapterPosition()).isSelected() ? Color.rgb(101, 93, 93) : Color.WHITE);
-                        onPhotoListener.onPhotoClick(getAdapterPosition(), multiPhotoUtilsList);
+
+
+                        final History history = multiPhotoUtilsList.get(getAdapterPosition());
+                        Log.i("TAG", "onClick: " + history.getIsSelected_flag());
+
+
+                        //multiPhotoUtilsList.get(getAdapterPosition()).setSelected(!multiPhotoUtilsList.get(getAdapterPosition()).isSelected());
+                        history.setSelected(!history.isSelected());
+
+                        itemView.setBackgroundColor(history.isSelected() ? Color.CYAN : Color.WHITE);
+
+                      //  onPhotoListener.onPhotoClick(getAdapterPosition(), multiPhotoUtilsList);
+
+
+
+
                     }
                 });
 
-            }
+
 
         }
 
@@ -137,4 +170,5 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
     public interface OnPhotoListener{
         void onPhotoClick(int position,List<History> multiPhotoUtilsList );
     }
+
 }

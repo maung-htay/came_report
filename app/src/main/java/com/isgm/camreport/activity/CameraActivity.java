@@ -43,6 +43,7 @@ import com.isgm.camreport.BuildConfig;
 import com.isgm.camreport.R;
 import com.isgm.camreport.roomdb.DatabaseClient;
 import com.isgm.camreport.roomdb.History;
+import com.isgm.camreport.testing.PhotoUploadActiviy;
 import com.isgm.camreport.utility.APIService;
 import com.isgm.camreport.utility.GetCurrentLocation;
 import com.isgm.camreport.utility.ShowAlerts;
@@ -123,7 +124,7 @@ public class CameraActivity extends BaseActivity {
 
     @OnClick(R.id.fabGallery)
     void showGallery(){
-        Intent intent = new Intent(this, MultiPhotoActivity.class);
+        Intent intent = new Intent(this, PhotoUploadActiviy.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
@@ -648,6 +649,7 @@ public class CameraActivity extends BaseActivity {
             history.setAltitude(this.context.get().altitude);
             history.setSent(false);
             history.setSelected(false);
+            history.setIsSelected_flag("0");
 
             DatabaseClient.getInstance(this.context.get().getApplicationContext()).getAppDatabase()
                         .historyDao().insert(history);
