@@ -49,7 +49,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PhotoUploadActiviy extends BaseActivity {
+public class PhotoUploadActiviy extends BaseActivity implements MyRecyclerViewAdapter.OnPhotoListener{
     RecyclerView recyclerView;
     Button button;
     ProgressBar progressBar;
@@ -73,6 +73,11 @@ public class PhotoUploadActiviy extends BaseActivity {
         getHistory.execute();
 
 
+
+    }
+
+    @Override
+    public void onPhotoClick(List<History> multiPhotoUtilsList) {
 
     }
 

@@ -11,7 +11,7 @@ public interface HistoryDao {
    List<History> getHistory(String sendDate,boolean isSent);
 
    //By MH for getting not sent data
-   @Query("SELECT * FROM History WHERE isSent=:isSent LIMIT 10")
+   @Query("SELECT * FROM History WHERE isSent=:isSent")
    List<History> getNotSendData(boolean isSent);
 
    @Query("UPDATE History SET isSent=:isSent WHERE id=:id")

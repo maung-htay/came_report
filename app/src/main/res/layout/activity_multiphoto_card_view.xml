@@ -11,8 +11,6 @@
         android:orientation="horizontal"
         android:weightSum="10">
 
-
-
         <ImageView
             android:id="@+id/card_view_image"
             android:layout_width="150dp"
@@ -39,6 +37,8 @@
             android:orientation="vertical"
             android:layout_weight = "8"
             android:layout_marginLeft="10dp">
+
+
 
             <TextView
                 android:id="@+id/card_view_image_title"
@@ -73,6 +73,7 @@
                     android:layout_marginLeft="3dp"
                     android:text="Testing"
                     android:textSize="20dp"/>
+
             </LinearLayout>
 
 

@@ -60,13 +60,12 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
     public void onBindViewHolder(@NonNull MultiPhotoAdapter.MultiPhotoAdapterViewHolder holder, int position) {
 
         if(multiPhotoUtilsList != null){
-
-
             History multiPhoto = multiPhotoUtilsList.get(position);
             final int THUMBSIZE = 228;
 
 
             File imgFile = new  File(multiPhotoUtilsList.get(position).getImagePath());
+            holder.itemView.setBackgroundColor(multiPhoto.isSelected() ? Color.CYAN : Color.WHITE);
 
             if(imgFile.exists()){
 
@@ -84,24 +83,7 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
             holder.photoType.setText(multiPhotoUtilsList.get(position).getActivityType());
             holder.photoRoute.setText(multiPhotoUtilsList.get(position).getRoute());
 
-            holder.photoDate.setText(multiPhotoUtilsList.get(position).getDate());
-
-
-
-     //       holder.photoImageView.setImageResource(multiPhotoUtilsList.get(position).getImageId());
-
-//            holder.itemView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    multiPhoto.setSelected(!multiPhoto.isSelected());
-//                    holder.itemView.setBackgroundColor(multiPhoto.isSelected() ? Color.rgb(74, 73, 73) : Color.WHITE);
-//
-//                }
-//            });
-
-
-
-
+            holder.photoDate.setText(multiPhotoUtilsList.get(position).getDate() + "   " +  multiPhotoUtilsList.get(position).getTime());
 
 
         }
@@ -137,23 +119,17 @@ public class MultiPhotoAdapter extends RecyclerView.Adapter<MultiPhotoAdapter.Mu
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
-
                         final History history = multiPhotoUtilsList.get(getAdapterPosition());
-                        Log.i("TAG", "onClick: " + history.getIsSelected_flag());
-
-
-                        //multiPhotoUtilsList.get(getAdapterPosition()).setSelected(!multiPhotoUtilsList.get(getAdapterPosition()).isSelected());
                         history.setSelected(!history.isSelected());
 
                         itemView.setBackgroundColor(history.isSelected() ? Color.CYAN : Color.WHITE);
-
-                      //  onPhotoListener.onPhotoClick(getAdapterPosition(), multiPhotoUtilsList);
-
+                       // itemView.setBackgroundColor(Color.CYAN);
 
 
+                        onPhotoListener.onPhotoClick(getAdapterPosition(), multiPhotoUtilsList);
 
                     }
+
                 });
 
 

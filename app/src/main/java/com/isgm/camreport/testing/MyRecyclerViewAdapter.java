@@ -1,6 +1,9 @@
 package com.isgm.camreport.testing;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
@@ -9,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.isgm.camreport.R;
 import com.isgm.camreport.activity.MultiPhotoActivity;
+import com.isgm.camreport.recyclerview.MultiPhotoAdapter;
 import com.isgm.camreport.roomdb.History;
 
 
@@ -76,7 +81,11 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
                 Toast.makeText(context, "You click position:" + holder.getAdapterPosition(), Toast.LENGTH_SHORT).show();
             }
         });
+
+       
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -96,6 +105,8 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
         data.remove(position);
         notifyItemRemoved(position);
         Log.i("TAG," ,"onItemDismiss: ");
+
+
     }
 
     public class MyRecyclerViewHolder extends RecyclerView.ViewHolder{

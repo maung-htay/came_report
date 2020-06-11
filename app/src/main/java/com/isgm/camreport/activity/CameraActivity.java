@@ -124,7 +124,7 @@ public class CameraActivity extends BaseActivity {
 
     @OnClick(R.id.fabGallery)
     void showGallery(){
-        Intent intent = new Intent(this, PhotoUploadActiviy.class);
+        Intent intent = new Intent(this, MultiPhotoActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
@@ -674,6 +674,7 @@ public class CameraActivity extends BaseActivity {
         protected Void doInBackground(Void... voids) {
             DatabaseClient.getInstance(this.context.get().getApplicationContext()).getAppDatabase()
                     .historyDao().update(true,this.context.get().imageFileName);
+            Log.i("TAG", "doInBackground: => " + this.context.get().imageFileName);
             return null;
         }
 

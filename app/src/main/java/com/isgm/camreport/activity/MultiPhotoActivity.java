@@ -1,13 +1,16 @@
 package com.isgm.camreport.activity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -30,6 +33,8 @@ import com.isgm.camreport.roomdb.DatabaseClient;
 import com.isgm.camreport.roomdb.History;
 import com.isgm.camreport.testing.ItemTouchHelperAdapter;
 import com.isgm.camreport.testing.MyCustomItemTouchHelper;
+import com.isgm.camreport.testing.MyRecyclerViewAdapter;
+import com.isgm.camreport.testing.PhotoUploadActiviy;
 import com.isgm.camreport.utility.APIService;
 import com.isgm.camreport.utility.RetrofitAgent;
 
@@ -43,6 +48,7 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -68,11 +74,53 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setContentView(R.layout.activity_multi_photo);
         init();
-        gettingAllPhoto();
+        recyclerView = (RecyclerView) findViewById(R.id.card_view_recycler_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
+        GetHistory getHistory = new GetHistory(this);
+        getHistory.execute();
 
 
     }
+
+    public class GetHistory extends AsyncTask<Void, Void, List<History>> {
+        final WeakReference<MultiPhotoActivity> context;
+
+
+        GetHistory(MultiPhotoActivity context) {
+            this.context = new WeakReference<>(context);
+        }
+
+        @Override
+        protected List<History> doInBackground(Void... voids) {
+            return DatabaseClient.getInstance(this.context.get().getApplicationContext())
+                    .getAppDatabase().historyDao().getNotSendData(false);
+        }
+        @Override
+        protected void onPostExecute(List<History> histories) {
+            super.onPostExecute(histories);
+
+            if (histories.isEmpty()) {
+
+                button.setEnabled(false);
+
+
+            } else {
+                Log.i(TAG, "onPostExecute: Reach time");
+                multiPhotoUtilList.clear();
+                multiPhotoUtilList = histories;
+                recyclerView.setLayoutManager(new LinearLayoutManager(this.context.get().getApplicationContext()));
+                multiPhotoAdapter = new MultiPhotoAdapter(getBaseContext(), multiPhotoUtilList,MultiPhotoActivity.this::onPhotoClick);
+
+                recyclerView.setAdapter(multiPhotoAdapter);
+               // button.setEnabled(true);
+                multiPhotoAdapter.notifyDataSetChanged();
+            }
+        }
+
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem menuItem) {
         if (menuItem.getItemId() == android.R.id.home) {
@@ -87,30 +135,35 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
         button = (Button) findViewById(R.id.button);
         button.setEnabled(false);
         button.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
                 //Do file uploading to server
 
                 photoUploadingToServer();
+
+                GetHistory getHistory = new GetHistory(MultiPhotoActivity.this);
+                getHistory.execute();
             }
         });
 
-        recyclerView = (RecyclerView) findViewById(R.id.card_view_recycler_list);
-        recyclerView.setLayoutManager(
-                new GridLayoutManager(this, getResources().getInteger(R.integer.shr_column_count)));
+
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void photoUploadingToServer() {
         progressBar.setVisibility(View.VISIBLE);
-        for(History history: multiPhotoUtilList){
+        List<History> selectedHistory = multiPhotoUtilList.stream().filter(newList -> newList.isSelected()).collect(Collectors.toList());
+        Log.i(TAG, "photoUploadingToServer: => " + selectedHistory.size());
+        for(History history: selectedHistory){
            // Log.i(TAG, "doInBackground: => " + history.isSelected());
+            // no need but to be sure
             if(history.isSelected() == true) {
                 sendDataToServer(history);
             }
         }
         progressBar.setVisibility(View.GONE);
-        Log.i(TAG, "doInBackground: => upload_sum count => " + upload_sum_count);
-       onBackPressed();
+
 
     }
 
@@ -233,35 +286,7 @@ public class MultiPhotoActivity extends BaseActivity implements MultiPhotoAdapte
     }
 
 
-    private void gettingAllPhoto() {
 
-
-
-
-        Log.i(TAG, "gettingAllPhoto: Reach Here");
-
-        // Gettign all photo from local db
-          class getAllDataFromDB extends AsyncTask<Void,Void,Void>{
-
-              @Override
-              protected Void doInBackground(Void... voids) {
-                  multiPhotoUtilList =  DatabaseClient.getInstance(MultiPhotoActivity.this.getApplicationContext())
-                          .getAppDatabase().historyDao().getNotSendData(false);;
-                  //Please Change Here, take data from DB
-                    multiPhotoAdapter = new MultiPhotoAdapter(getBaseContext(), multiPhotoUtilList,MultiPhotoActivity.this::onPhotoClick);
-                 /* ItemTouchHelper.Callback callback =
-                          new MyCustomItemTouchHelper((ItemTouchHelperAdapter) multiPhotoAdapter);
-                  itemTouchHelper = new ItemTouchHelper(callback);
-                  itemTouchHelper.attachToRecyclerView(null);
-                  itemTouchHelper.attachToRecyclerView(recyclerView);*/
-                  recyclerView.setAdapter(multiPhotoAdapter);
-
-                  return null;
-              }
-
-          }
-          new getAllDataFromDB().execute();
-    }
 
 
     @Override
